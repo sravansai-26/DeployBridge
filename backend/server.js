@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import deployRoutes from "./routes/deployRoutes.js";
 
 dotenv.config();
+console.log("Loaded Token:", process.env.VERCEL_TOKEN);  // <-- ADD THIS
 
 const app = express();
 app.use(cors());

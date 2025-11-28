@@ -16,30 +16,28 @@ export const deployProject = async (req, res) => {
     // Extract ZIP
     await extract(zipPath, { dir: path.resolve(extractPath) });
 
-    // Remove node_modules if exists
+    // Remove node_modules
     const nm = path.join(extractPath, "node_modules");
     if (fs.existsSync(nm)) await fs.remove(nm);
 
-    // Find dist or build folder
+    // Find dist/build
     let deployFolder = null;
-    if (fs.existsSync(path.join(extractPath, "dist"))) {
+    if (fs.existsSync(path.join(extractPath, "dist")))
       deployFolder = path.join(extractPath, "dist");
-    } else if (fs.existsSync(path.join(extractPath, "build"))) {
+    else if (fs.existsSync(path.join(extractPath, "build")))
       deployFolder = path.join(extractPath, "build");
-    } else {
+    else
       return res.status(400).json({
-        error: "Project must contain dist/ or build/ folder"
+        error: "Project must contain dist/ or build/ folder",
       });
-    }
 
-    // Convert files to Vercel upload format
+    // Convert files to Vercel format
     const files = [];
     const walk = async (folder) => {
       const items = await fs.readdir(folder);
       for (let item of items) {
         const full = path.join(folder, item);
         const stat = await fs.stat(full);
-
         if (stat.isDirectory()) {
           await walk(full);
         } else {
@@ -53,7 +51,7 @@ export const deployProject = async (req, res) => {
     };
     await walk(deployFolder);
 
-    // Deploy to Vercel
+    // Create deployment
     const vercelRes = await fetch("https://api.vercel.com/v13/deployments", {
       method: "POST",
       headers: {
@@ -68,22 +66,58 @@ export const deployProject = async (req, res) => {
       }),
     });
 
-    const result = await vercelRes.json();
-
+    const deployment = await vercelRes.json();
     if (!vercelRes.ok) {
-      console.log("Vercel Error", result);
-      return res.status(500).json({ error: result.error?.message });
+      console.log("Vercel Error", deployment);
+      return res
+        .status(500)
+        .json({ error: deployment.error?.message || "Deployment failed" });
+    }
+
+    const deploymentId = deployment.id;
+
+    // Poll for READY state
+    let finalUrl = null;
+
+    for (let i = 0; i < 20; i++) {
+      const checkRes = await fetch(
+        `https://api.vercel.com/v13/deployments/${deploymentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
+          },
+        }
+      );
+
+      const json = await checkRes.json();
+
+      if (json.readyState === "READY") {
+        // 🔥 Correct way: take URL from alias[0]
+        if (json.alias && json.alias.length > 0) {
+          finalUrl = json.alias[0];
+        }
+        break;
+      }
+
+      await new Promise((r) => setTimeout(r, 1500));
     }
 
     // Cleanup
-    fs.remove(zipPath);
-    fs.remove(extractPath);
+    await fs.remove(zipPath);
+    await fs.remove(extractPath);
+
+    if (!finalUrl) {
+      return res.json({
+        success: true,
+        message:
+          "Deployment created but still building. Check the Vercel dashboard.",
+      });
+    }
 
     return res.json({
       success: true,
-      url: `https://${result.url}`,
+      url: `https://${finalUrl}`,
     });
-
   } catch (err) {
     console.error("Deploy Error:", err);
     return res.status(500).json({ error: err.message });
