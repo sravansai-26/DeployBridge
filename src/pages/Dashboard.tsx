@@ -1,57 +1,59 @@
-import { useState, useEffect } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
-import { getProjects, Project } from '@/lib/storage';
-import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Rocket, 
-  ExternalLink, 
+import { useState, useEffect } from "react";
+import { Link, Navigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { getProjects, Project } from "@/lib/storage";
+import Layout from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  User,
+  Mail,
+  Calendar,
+  Rocket,
+  ExternalLink,
   Clock,
   FolderOpen,
   Search,
   Filter,
-  ArrowUpRight
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
+  ArrowUpRight,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 const statusColors = {
-  uploaded: 'bg-muted text-muted-foreground',
-  building: 'bg-warning/10 text-warning border-warning/20',
-  deploying: 'bg-primary/10 text-primary border-primary/20',
-  deployed: 'bg-success/10 text-success border-success/20',
-  failed: 'bg-destructive/10 text-destructive border-destructive/20',
+  uploaded: "bg-muted text-muted-foreground border",
+  building: "bg-warning/10 text-warning border-warning/20 border",
+  deploying: "bg-primary/10 text-primary border-primary/20 border",
+  deployed: "bg-success/10 text-success border-success/20 border",
+  failed: "bg-destructive/10 text-destructive border-destructive/20 border",
 };
 
 const providerNames = {
-  vercel: 'Vercel',
-  netlify: 'Netlify',
-  firebase: 'Firebase',
+  vercel: "Vercel",
+  netlify: "Netlify",
+  firebase: "Firebase",
 };
 
 const Dashboard = () => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  // Auto-refresh dashboard when returning from /deploy
   useEffect(() => {
     if (user) {
       setProjects(getProjects(user.id));
     }
-  }, [user]);
+  }, [user, location.pathname]);
 
   if (isLoading) {
     return (
@@ -68,18 +70,23 @@ const Dashboard = () => {
   }
 
   const filteredProjects = projects.filter((project) => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchSearch = project.name
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase());
+
+    const matchStatus =
+      statusFilter === "all" || project.status === statusFilter;
+
+    return matchSearch && matchStatus;
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -97,7 +104,7 @@ const Dashboard = () => {
               <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-hero text-3xl font-bold text-primary-foreground">
                 {user.name.charAt(0).toUpperCase()}
               </div>
-              
+
               <div className="flex-1">
                 <h1 className="text-2xl font-bold mb-2">{user.name}</h1>
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -111,7 +118,8 @@ const Dashboard = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Rocket className="h-4 w-4" />
-                    {projects.length} project{projects.length !== 1 ? 's' : ''} deployed
+                    {projects.length} project
+                    {projects.length !== 1 ? "s" : ""} deployed
                   </div>
                 </div>
               </div>
@@ -134,7 +142,7 @@ const Dashboard = () => {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <h2 className="text-xl font-semibold">Your Projects</h2>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -145,7 +153,7 @@ const Dashboard = () => {
                   className="pl-9 w-full sm:w-64"
                 />
               </div>
-              
+
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-40">
                   <Filter className="h-4 w-4 mr-2" />
@@ -174,11 +182,11 @@ const Dashboard = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
               <p className="text-muted-foreground text-center mb-6 max-w-md">
-                {searchTerm || statusFilter !== 'all'
-                  ? 'No projects match your filters. Try adjusting your search.'
-                  : 'Start by uploading your first project to deploy it to your favorite platform.'}
+                {searchTerm || statusFilter !== "all"
+                  ? "No projects match your filters. Try adjusting your search."
+                  : "Start by uploading your first project to deploy it to your favorite platform."}
               </p>
-              {!searchTerm && statusFilter === 'all' && (
+              {!searchTerm && statusFilter === "all" && (
                 <Button asChild>
                   <Link to="/deploy">
                     <Rocket className="h-4 w-4 mr-2" />
@@ -211,7 +219,7 @@ const Dashboard = () => {
                           </div>
                           {project.provider && (
                             <Badge variant="outline">
-                              {providerNames[project.provider]}
+                              {providerNames[project.provider] ?? "Unknown"}
                             </Badge>
                           )}
                         </div>
@@ -220,12 +228,17 @@ const Dashboard = () => {
 
                     <div className="flex items-center gap-3">
                       <Badge className={statusColors[project.status]}>
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                        {project.status.charAt(0).toUpperCase() +
+                          project.status.slice(1)}
                       </Badge>
-                      
-                      {project.liveUrl && (
+
+                      {project.status === "deployed" && project.liveUrl && (
                         <Button variant="outline" size="sm" asChild>
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href={project.liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             View Live
                             <ArrowUpRight className="h-3 w-3 ml-1" />
                           </a>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, getCurrentUser, setSession, clearSession, authenticateUser, createUser } from '@/lib/storage';
 
 interface AuthContextType {
@@ -22,7 +22,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
     const authenticatedUser = authenticateUser(email, password);
+    setIsLoading(false);
+
     if (authenticatedUser) {
       setSession(authenticatedUser.id);
       setUser(authenticatedUser);
@@ -32,6 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, name: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
     try {
       const newUser = createUser(email, name, password);
       setSession(newUser.id);
@@ -39,6 +43,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return true;
     } catch {
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,8 +53,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const value = useMemo(() => ({
+    user,
+    isLoading,
+    login,
+    register,
+    logout,
+  }), [user, isLoading]);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -56,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

@@ -3,17 +3,41 @@ import * as React from "react";
 const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+  const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    if (typeof window === "undefined") return;
+
+    // Create media query list
+    const mql: MediaQueryList = window.matchMedia(
+      `(max-width: ${MOBILE_BREAKPOINT - 1}px)`
+    );
+
+    // Type for both modern and legacy events
+    const onChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile("matches" in event ? event.matches : mql.matches);
     };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
+
+    // Initial value
+    setIsMobile(mql.matches);
+
+    // Modern browsers
+    if (mql.addEventListener) {
+      mql.addEventListener("change", onChange);
+      return () => {
+        mql.removeEventListener("change", onChange);
+      };
+    }
+
+    // Legacy Safari fallback WITHOUT using 'any'
+    const legacyListener = (e: MediaQueryListEvent) => onChange(e);
+
+    mql.addListener(legacyListener);
+    return () => {
+      mql.removeListener(legacyListener);
+    };
+
   }, []);
 
-  return !!isMobile;
+  return isMobile;
 }
