@@ -1,39 +1,73 @@
 import fs from "fs-extra";
 import path from "path";
-import { generateReactConfig, generateViteConfig, generateNextConfig, generateStaticConfig, generateFlaskConfig } from "./configGenerator.js";
+import {
+  generateReactConfig,
+  generateViteConfig,
+  generateNextConfig,
+  generateStaticConfig,
+  generateFlaskConfig
+} from "./configGenerator.js";
 
 export const normalizeProject = async (dir, framework) => {
   console.log("🔧 Normalizing project...");
 
-  if (framework === "react") {
-    await generateReactConfig(dir);
+  // Ensure directory exists
+  if (!fs.existsSync(dir)) {
+    console.warn("⚠ Normalization skipped. Directory does not exist:", dir);
+    return;
   }
 
-  if (framework === "vite") {
-    await generateViteConfig(dir);
-  }
+  try {
+    switch (framework) {
+      case "react":
+        console.log("⚙ Applying React normalization");
+        await safeNormalize(() => generateReactConfig(dir));
+        break;
 
-  if (framework === "next") {
-    await generateNextConfig(dir);
-  }
+      case "vite":
+        console.log("⚙ Applying Vite normalization");
+        await safeNormalize(() => generateViteConfig(dir));
+        break;
 
-  if (framework === "static") {
-    await generateStaticConfig(dir);
-  }
+      case "next":
+        console.log("⚙ Applying Next.js normalization");
+        await safeNormalize(() => generateNextConfig(dir));
+        break;
 
-  if (framework === "flask") {
-    await generateFlaskConfig(dir);
-  }
+      case "static":
+        console.log("⚙ Applying Static Site normalization");
+        await safeNormalize(() => generateStaticConfig(dir));
+        break;
 
-  if (framework === "node") {
-    // Node usually already fine
-    console.log("Node project: No normalization needed");
-  }
+      case "flask":
+        console.log("⚙ Applying Flask normalization");
+        await safeNormalize(() => generateFlaskConfig(dir));
+        break;
 
-  if (framework === "unknown") {
-    console.log("⚠ Unknown framework. DeployBridge will treat as static site.");
-    await generateStaticConfig(dir);
-  }
+      case "node":
+        console.log("Node project: No normalization required.");
+        break;
 
-  console.log("✨ Normalization Completed");
+      default:
+        console.log("⚠ Unknown framework → treating as static");
+        await safeNormalize(() => generateStaticConfig(dir));
+        break;
+    }
+
+    console.log("✨ Normalization Completed");
+  } catch (err) {
+    console.error("❌ Normalization error:", err);
+    console.log("⚠ Continuing deployment despite normalization errors…");
+  }
+};
+
+/**
+ * Wrap config generators safely so they NEVER crash the backend.
+ */
+const safeNormalize = async (fn) => {
+  try {
+    await fn();
+  } catch (err) {
+    console.error("⚠ Normalization step failed but was handled:", err.message);
+  }
 };

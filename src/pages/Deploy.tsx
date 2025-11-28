@@ -23,6 +23,12 @@ import {
 
 type Step = "upload" | "configure" | "deploy" | "success";
 
+interface DeployResponse {
+  logs?: string[];
+  liveUrl?: string;
+  error?: string;
+}
+
 const Deploy = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -41,7 +47,8 @@ const Deploy = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [liveUrl, setLiveUrl] = useState<string | null>(null);
 
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   if (isLoading) {
     return (
@@ -71,53 +78,56 @@ const Deploy = () => {
       return;
     }
 
-    // 1️⃣ Save project to localStorage
     const newProject = createProject(
       user.id,
       projectName.trim(),
       file.name,
       file.size
     );
-    setProject(newProject);
 
-    // UI Step → Deploy
+    setProject(newProject);
     setStep("deploy");
     setStatus("building");
     setLogs(["Preparing deployment..."]);
 
     try {
-      // 2️⃣ Prepare form data
       const formData = new FormData();
       formData.append("file", file);
       formData.append("provider", provider);
       formData.append("projectName", projectName.trim());
 
-      // 3️⃣ Call backend
       const response = await fetch(`${BACKEND_URL}/api/deploy`, {
         method: "POST",
         body: formData,
       });
 
-      const result = await response.json();
+      // SAFEST TYPE for unknown JSON
+      let result: DeployResponse = {};
+
+      try {
+        result = (await response.json()) as DeployResponse;
+      } catch {
+        result = {};
+      }
 
       if (!response.ok) {
         setStatus("error");
         updateProject(newProject.id, { status: "failed" });
+
         toast({
           title: "Deployment failed",
-          description: result.error || "Something went wrong.",
+          description: result.error || "Server returned an invalid response.",
           variant: "destructive",
         });
         return;
       }
 
-      // 4️⃣ Update logs (if backend sends logs)
+      // Logs
       if (result.logs) setLogs(result.logs);
 
-      // 5️⃣ Save real live URL
-      setLiveUrl(result.liveUrl);
+      // Live URL
+      if (result.liveUrl) setLiveUrl(result.liveUrl);
 
-      // 6️⃣ Update LocalStorage
       updateProject(newProject.id, {
         status: "deployed",
         provider,
@@ -125,7 +135,6 @@ const Deploy = () => {
         deployedAt: new Date().toISOString(),
       });
 
-      // 7️⃣ Success UI
       setStatus("success");
       setStep("success");
 
@@ -133,13 +142,16 @@ const Deploy = () => {
         title: "Deployment successful!",
         description: "Your project is now live.",
       });
-    } catch (err: any) {
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unknown deployment error";
+
       setStatus("error");
       updateProject(newProject.id, { status: "failed" });
 
       toast({
         title: "Deployment failed",
-        description: err.message,
+        description: message,
         variant: "destructive",
       });
     }
@@ -201,7 +213,9 @@ const Deploy = () => {
             className="space-y-6"
           >
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">Choose Deployment Provider</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                Choose Deployment Provider
+              </h2>
               <p className="text-muted-foreground">
                 Select where you want to deploy your project
               </p>
