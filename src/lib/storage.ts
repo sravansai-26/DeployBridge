@@ -11,9 +11,12 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  password: string; // hashed
-  createdAt: string;
+  password?: string;   // normal login users only
+  avatar?: string;     // google users only
+  createdAt?: string;  // both
 }
+
+// -------------------------
 
 export interface Project {
   id: string;
@@ -76,6 +79,9 @@ export const getUsers = (): User[] => {
   return safeParse<User[]>(USERS_KEY, []);
 };
 
+/**
+ * Create normal email/password user
+ */
 export const createUser = (
   email: string,
   name: string,
@@ -90,7 +96,7 @@ export const createUser = (
     id: crypto.randomUUID(),
     email,
     name,
-    password: sha256(password), // hashed password
+    password: sha256(password),
     createdAt: new Date().toISOString(),
   };
 
@@ -100,6 +106,9 @@ export const createUser = (
   return user;
 };
 
+/**
+ * Authenticate normal login user
+ */
 export const authenticateUser = (
   email: string,
   password: string
@@ -123,9 +132,26 @@ export const getSession = (): string | null => {
 
 export const clearSession = () => {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem("user"); // <-- remove google user too
 };
 
+/**
+ * PRO USER FIX:
+ * - First check Google user
+ * - Then fallback to email/password user
+ */
 export const getCurrentUser = (): User | null => {
+  // CASE 1 → Google user stored as "user"
+  const googleUser = localStorage.getItem("user");
+  if (googleUser) {
+    try {
+      return JSON.parse(googleUser) as User;
+    } catch {
+      localStorage.removeItem("user");
+    }
+  }
+
+  // CASE 2 → Email/password normal user
   const userId = getSession();
   if (!userId) return null;
 
@@ -175,7 +201,7 @@ export const createProject = (
   return project;
 };
 
-const MAX_LOGS = 50; // prevent localStorage overflow
+const MAX_LOGS = 50;
 
 export const updateProject = (
   projectId: string,
@@ -191,7 +217,6 @@ export const updateProject = (
     ...updates,
   };
 
-  // Limit build logs
   if (updated.buildLogs && updated.buildLogs.length > MAX_LOGS) {
     updated.buildLogs = updated.buildLogs.slice(-MAX_LOGS);
   }

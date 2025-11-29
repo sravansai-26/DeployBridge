@@ -1,16 +1,25 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Rocket, Menu, X, User, LogOut, LayoutDashboard, Upload, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import {
+  Rocket,
+  Menu,
+  X,
+  User,
+  LogOut,
+  LayoutDashboard,
+  Upload,
+  MessageSquare,
+} from "lucide-react";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -20,14 +29,14 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const navLinks = user
     ? [
-        { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/deploy', label: 'Deploy', icon: Upload },
-        { to: '/feedback', label: 'Feedback', icon: MessageSquare },
+        { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/deploy", label: "Deploy", icon: Upload },
+        { to: "/feedback", label: "Feedback", icon: MessageSquare },
       ]
     : [];
 
@@ -40,6 +49,7 @@ const Navbar = () => {
       className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-lg"
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
           <div className="relative">
             <Rocket className="h-8 w-8 text-primary transition-transform group-hover:rotate-12" />
@@ -48,18 +58,19 @@ const Navbar = () => {
           <span className="text-xl font-bold">DeployBridge</span>
         </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
-                isActive(link.to) ? 'text-primary' : 'text-muted-foreground'
+              className={`relative flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
+                isActive(link.to) ? "text-primary" : "text-muted-foreground"
               }`}
             >
               <link.icon className="h-4 w-4" />
               {link.label}
+
               {isActive(link.to) && (
                 <motion.div
                   layoutId="navbar-indicator"
@@ -70,17 +81,29 @@ const Navbar = () => {
           ))}
         </div>
 
+        {/* Right side user menu (desktop) */}
         <div className="hidden md:flex items-center gap-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
+                  {/* Avatar Block */}
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="User Avatar"
+                      className="h-8 w-8 rounded-full object-cover border"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
                   <span className="max-w-[100px] truncate">{user.name}</span>
                 </Button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard" className="flex items-center gap-2">
@@ -88,8 +111,13 @@ const Navbar = () => {
                     Profile
                   </Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive"
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </DropdownMenuItem>
@@ -107,12 +135,16 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu Toggle */}
         <button
           className="md:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
         </button>
       </div>
 
@@ -121,7 +153,6 @@ const Navbar = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
           className="md:hidden border-t border-border bg-background p-4"
         >
           <div className="flex flex-col gap-4">
@@ -131,25 +162,43 @@ const Navbar = () => {
                 to={link.to}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2 text-sm font-medium ${
-                  isActive(link.to) ? 'text-primary' : 'text-muted-foreground'
+                  isActive(link.to) ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <link.icon className="h-4 w-4" />
                 {link.label}
               </Link>
             ))}
+
             {user ? (
-              <Button variant="destructive" onClick={handleLogout} className="w-full">
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full"
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
             ) : (
               <div className="flex flex-col gap-2">
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
+                <Button
+                  variant="outline"
+                  asChild
+                  className="w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link to="/login">Log in</Link>
                 </Button>
-                <Button asChild className="w-full">
-                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+
+                <Button
+                  asChild
+                  className="w-full"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link to="/register">Get Started</Link>
                 </Button>
               </div>
             )}

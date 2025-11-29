@@ -6,13 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Rocket, Mail, Lock, User, Loader2, ArrowLeft } from "lucide-react";
+import {
+  Rocket,
+  Mail,
+  Lock,
+  User,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
+
+import { FcGoogle } from "react-icons/fc"; // ⭐ Google icon
 
 const Auth = () => {
   const location = useLocation();
   const isLogin = location.pathname === "/login";
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+
+  const { login, register, googleLogin } = useAuth(); // ⭐ include googleLogin
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +42,7 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        // ------- LOGIN -------
         const success = await login(email, formData.password);
 
         if (success) {
@@ -49,6 +60,7 @@ const Auth = () => {
           });
         }
       } else {
+        // ------- REGISTER -------
         if (formData.password !== formData.confirmPassword) {
           toast({
             title: "Passwords do not match",
@@ -83,7 +95,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side */}
+      {/* Left Section */}
       <div className="flex-1 flex items-center justify-center p-8">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -114,7 +126,9 @@ const Auth = () => {
             </div>
           </div>
 
+          {/* AUTH FORM */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* NAME (Register Only) */}
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
@@ -135,6 +149,7 @@ const Auth = () => {
               </div>
             )}
 
+            {/* EMAIL */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -153,6 +168,7 @@ const Auth = () => {
               </div>
             </div>
 
+            {/* PASSWORD */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -172,6 +188,7 @@ const Auth = () => {
               </div>
             </div>
 
+            {/* CONFIRM PASSWORD (Register) */}
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -196,6 +213,7 @@ const Auth = () => {
               </div>
             )}
 
+            {/* SUBMIT BUTTON */}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
@@ -210,6 +228,22 @@ const Auth = () => {
             </Button>
           </form>
 
+          {/* ⭐ GOOGLE LOGIN BUTTON (Below Form) */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={async () => {
+                const ok = await googleLogin();
+                if (ok) navigate("/dashboard");
+              }}
+              className="flex items-center justify-center gap-2 w-full p-2 border rounded-md bg-white text-black shadow hover:bg-gray-100 transition"
+            >
+              <FcGoogle size={24} />
+              {isLogin ? "Sign in with Google" : "Sign up with Google"}
+            </button>
+          </div>
+
+          {/* SWITCH MODE */}
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <Link
@@ -222,12 +256,9 @@ const Auth = () => {
         </motion.div>
       </div>
 
-      {/* Right Side */}
+      {/* RIGHT SIDE */}
       <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-hero relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly9
-3d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0
-zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOGMxMC45NDEgMCAxOC04LjA1OSAxOC
-0xOHMtNy4wNTktMTgtMTgtMTh6IiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN...')] opacity-30" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
