@@ -1,73 +1,335 @@
-# Welcome to your Lovable project
+---
 
-## Project info
+# 🚀 DeployBridge — Universal Deployment Platform
 
-**URL**: https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797
+### Built by **Team TechnoTitans** | Developed using **Lovable AI Platform**
 
-## How can I edit this code?
+DeployBridge is a powerful, beginner-friendly deployment automation platform.
+It allows users to **upload any frontend project (ZIP)** → detects framework → builds → deploys automatically to **Vercel, Netlify or Firebase**, and returns a **live URL instantly**.
 
-There are several ways of editing your application.
+Designed for hackathons, students, and developers who want **1-click deployment**.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797) and start prompting.
+# 📌 Table of Contents
 
-Changes made via Lovable will be committed automatically to this repo.
+* [🚀 DeployBridge — Universal Deployment Platform](#-deploybridge--universal-deployment-platform)
+* [📌 Project Theme](#-project-theme)
+* [✨ Key Features](#-key-features)
+* [🛠 Technologies Used](#-technologies-used)
+* [📂 Folder Structure](#-folder-structure)
+* [📦 Requirements](#-requirements)
+* [⚙️ Installation & Setup](#️-installation--setup)
+* [🔥 Backend Setup (Node.js)](#-backend-setup-nodejs)
+* [🌐 Frontend Setup (React + Vite)](#-frontend-setup-react--vite)
+* [🔐 Firebase Configuration (Google Login)](#-firebase-configuration-google-login)
+* [🚀 Running the Complete App](#-running-the-complete-app)
+* [🌍 Deployment Options](#-deployment-options)
+* [💙 Built with Lovable](#-built-with-lovable)
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# 📌 Project Theme
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**"Simplifying Deployment for Everyone"**
 
-Follow these steps:
+Most beginners struggle with:
+
+* build errors
+* wrong commands
+* confusing deploy settings
+* missing config files
+
+DeployBridge solves all of this with **one upload → one click → online**.
+
+---
+
+# ✨ Key Features
+
+### 🔥 **1. Automatic ZIP Extraction**
+
+* Upload any frontend project's ZIP
+* System auto-detects build folder (`dist/`, `build/`)
+
+### ⚙️ **2. Auto Framework Detection**
+
+Supports:
+
+* React
+* Vite
+* Vue
+* Vanilla HTML/CSS/JS
+* Next.js (auto handled by Vercel)
+
+### 🚀 **3. One-Click Deployment**
+
+Deploy to:
+
+* **Vercel**
+* **Netlify**
+* **Firebase Hosting**
+
+Returns **live URL instantly**.
+
+### 📝 **4. Deployment Logs in Real-Time**
+
+Backend streams:
+
+* build logs
+* deployment progress
+* success/failure status
+
+### 🔒 **5. Google Authentication**
+
+Integrated via Firebase:
+
+* Google Sign-In
+* Automatic login
+* User has dashboard
+
+### 📊 **6. Project Dashboard**
+
+Displays:
+
+* All deployments
+* Status
+* Build logs
+* Live URLs
+
+### 🎨 **7. Clean UI**
+
+* shadcn/ui
+* Tailwind CSS
+* Smooth animations using Framer Motion
+
+---
+
+# 🛠 Technologies Used
+
+### **Frontend**
+
+* React + TypeScript
+* Vite
+* Tailwind CSS
+* shadcn/ui
+* Framer Motion
+
+### **Backend**
+
+* Node.js
+* Express
+* Multer
+* extract-zip
+* fs-extra
+* Vercel API
+* Netlify API
+* Firebase Admin
+
+### **Authentication**
+
+* Firebase Auth
+* Google OAuth
+
+### **Platform**
+
+* **Lovable AI Development Platform**
+
+---
+
+# 📂 Folder Structure
+
+```
+DeployBridge/
+│── backend/
+│   ├── routes/
+│   ├── controllers/
+│   ├── server.js
+│   └── .env
+│
+│── src/
+│   ├── components/
+│   ├── contexts/
+│   ├── hooks/
+│   ├── pages/
+│   ├── lib/
+│   └── main.tsx
+│
+│── public/
+│── index.html
+│── package.json
+│── vite.config.ts
+└── README.md
+```
+
+---
+
+# 📦 Requirements
+
+✔ Node.js 18+
+✔ npm or yarn
+✔ Git
+✔ Firebase Account
+✔ Vercel Account
+✔ Netlify Account
+
+---
+
+# ⚙️ Installation & Setup
+
+### 1️⃣ Clone the Repository
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone <YOUR_REPO_URL>
+cd DeployBridge
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 🔥 Backend Setup (Node.js)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 2️⃣ Install dependencies
+
+```sh
+cd backend
+npm install
+```
+
+### 3️⃣ Create **backend/.env**
+
+```
+PORT=5000
+
+# Vercel Credentials
+VERCEL_TOKEN=your_token
+VERCEL_PROJECT_ID=your_project_id
+VERCEL_ORG_ID=
+
+# Netlify (optional)
+NETLIFY_TOKEN=
+NETLIFY_SITE_ID=
+
+# Firebase Hosting (optional)
+FIREBASE_TOKEN=
+```
+
+### 4️⃣ Run Backend
+
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Backend runs at:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+http://localhost:5000
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# 🌐 Frontend Setup (React + Vite)
 
-## What technologies are used for this project?
+### 1️⃣ Install frontend dependencies
 
-This project is built with:
+```sh
+npm install
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### 2️⃣ Add `.env` in project root
 
-## How can I deploy this project?
+```
+VITE_BACKEND_URL=http://localhost:5000
 
-Simply open [Lovable](https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797) and click on Share -> Publish.
+# Firebase Auth
+VITE_FIREBASE_API_KEY=xxxxx
+VITE_FIREBASE_AUTH_DOMAIN=xxxx.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=xxxx
+VITE_FIREBASE_STORAGE_BUCKET=xxxx.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=xxxx
+VITE_FIREBASE_APP_ID=xxxxx
+```
 
-## Can I connect a custom domain to my Lovable project?
+### 3️⃣ Run Frontend
 
-Yes, you can!
+```sh
+npm run dev
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# 🔐 Firebase Configuration (Google Login)
+
+### Go to Firebase Console → Project Settings → Web App
+
+Copy config and paste into your `.env`.
+
+Then enable:
+✔ Firebase Authentication
+✔ Google Provider
+✔ Authorized Domains
+
+Done! 🎉
+
+---
+
+# 🚀 Running the Complete App
+
+Backend:
+
+```sh
+cd backend
+npm run dev
+```
+
+Frontend:
+
+```sh
+npm run dev
+```
+
+Open:
+
+👉 [http://localhost:5173](http://localhost:5173)
+Login → Upload ZIP → Deploy → Get Live URL
+
+---
+
+# 🌍 Deployment Options
+
+### **1. Deploy using Lovable**
+
+Directly open the project:
+
+👉 [https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797](https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797)
+
+Click:
+
+```
+Share → Publish
+```
+
+### **2. Deploy Manually**
+
+Frontend → Vercel / Netlify
+Backend → Render / Cyclic / Railway
+
+---
+
+# 💙 Built with Lovable
+
+This project was created and developed using the **Lovable AI platform**, which enables:
+
+* Instant project scaffolding
+* AI-assisted coding
+* One-click publishing
+* Automatic commit management
+* Team collaboration
+
+Lovable Project Link:
+👉 [https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797](https://lovable.dev/projects/cde90424-d7be-4c0c-926e-12cefbf6c797)
+
+---
+
+# 🏁 Final Notes
+
+DeployBridge was proudly built by **Team TechnoTitans**
+for fast and frictionless deployments.
