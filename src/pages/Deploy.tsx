@@ -24,8 +24,9 @@ import {
 type Step = "upload" | "configure" | "deploy" | "success";
 
 interface DeployResponse {
+  success?: boolean;
+  url?: string;
   logs?: string[];
-  liveUrl?: string;
   error?: string;
 }
 
@@ -101,22 +102,22 @@ const Deploy = () => {
         body: formData,
       });
 
-      // SAFEST TYPE for unknown JSON
       let result: DeployResponse = {};
-
       try {
         result = (await response.json()) as DeployResponse;
       } catch {
         result = {};
       }
 
-      if (!response.ok) {
+      // Handle error from backend
+      if (!response.ok || result.success === false) {
         setStatus("error");
         updateProject(newProject.id, { status: "failed" });
 
         toast({
           title: "Deployment failed",
-          description: result.error || "Server returned an invalid response.",
+          description:
+            result.error || "Server returned an invalid deployment response.",
           variant: "destructive",
         });
         return;
@@ -125,15 +126,26 @@ const Deploy = () => {
       // Logs
       if (result.logs) setLogs(result.logs);
 
-      // Live URL
-      if (result.liveUrl) setLiveUrl(result.liveUrl);
+      // Live URL from backend (result.url)
+      if (result.url) {
+        setLiveUrl(result.url);
+        updateProject(newProject.id, {
+          status: "deployed",
+          provider,
+          liveUrl: result.url,
+          deployedAt: new Date().toISOString(),
+        });
 
-      updateProject(newProject.id, {
-        status: "deployed",
-        provider,
-        liveUrl: result.liveUrl,
-        deployedAt: new Date().toISOString(),
-      });
+        // Optional: open in new tab
+        window.open(result.url, "_blank");
+      } else {
+        // deployed but no URL (very rare)
+        updateProject(newProject.id, {
+          status: "deployed",
+          provider,
+          deployedAt: new Date().toISOString(),
+        });
+      }
 
       setStatus("success");
       setStep("success");
@@ -296,26 +308,32 @@ const Deploy = () => {
             </p>
 
             {liveUrl && (
-              <a
-                href={liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline font-medium break-all"
-              >
-                {liveUrl}
-              </a>
+              <>
+                <a
+                  href={liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium break-all"
+                >
+                  {liveUrl}
+                </a>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                  <Button asChild>
+                    <a
+                      href={liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View Live App
+                    </a>
+                  </Button>
+                </div>
+              </>
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
-              {liveUrl && (
-                <Button asChild>
-                  <a href={liveUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    View Live App
-                  </a>
-                </Button>
-              )}
-
               <Button variant="outline" onClick={() => navigate("/dashboard")}>
                 Go to Dashboard
               </Button>
